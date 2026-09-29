@@ -14,10 +14,16 @@ jobs:
         with:
           python-version: "3.12"
       - run: python webuntis_to_ics.py
+      - name: Änderungen per Push melden
+        continue-on-error: true   # Push-Fehler sollen den Kalender-Sync nicht stoppen
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: python benachrichtigen.py
       - name: Änderungen speichern
         run: |
           git config user.name "stundenplan-bot"
           git config user.email "actions@users.noreply.github.com"
+          git add stundenplan.ics bekannt.json 2>/dev/null || git add stundenplan.ics
           git add stundenplan.ics
           git diff --cached --quiet || git commit -m "Stundenplan aktualisiert"
           git push
